@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lab Monitor — Master Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>"/>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══════════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="login-screen">
+
+  <!-- Animated background grid -->
+  <div class="login-bg">
+    <div class="login-bg-grid"></div>
+    <div class="login-bg-glow"></div>
+  </div>
+
+  <!-- Floating stats (decorative) -->
+  <div class="login-float-cards">
+    <div class="float-card" style="--delay:0s">
+      <i class="fas fa-desktop"></i>
+      <span>32 PCs Online</span>
+    </div>
+    <div class="float-card" style="--delay:0.4s">
+      <i class="fas fa-shield-halved"></i>
+      <span>98% Compliant</span>
+    </div>
+    <div class="float-card" style="--delay:0.8s">
+      <i class="fas fa-bell"></i>
+      <span>Live Alerts</span>
+    </div>
+    <div class="float-card" style="--delay:1.2s">
+      <i class="fas fa-clock"></i>
+      <span>Real-time Tracking</span>
+    </div>
+  </div>
+
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="login-logo">
+      <div class="logo-icon-wrap">
+        <div class="logo-icon-ring"></div>
+        <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+      </div>
+      <h1>Lab Monitor</h1>
+      <p>Real-time Lab Supervision System</p>
+    </div>
+
+    <!-- Live status indicator -->
+    <div class="login-status" id="loginStatus">
+      <span class="login-status-dot" id="loginStatusDot"></span>
+      <span id="loginStatusText">Checking server...</span>
+    </div>
+
+    <!-- Form -->
+    <form id="loginForm" class="login-form">
+      <div class="form-group">
+        <label><i class="fas fa-user"></i> Username</label>
+        <div class="input-wrap">
+          <input type="text" id="loginUsername" placeholder="Enter username"
+            autocomplete="username" required
+            oninput="clearLoginError()"/>
+          <span class="input-icon"><i class="fas fa-user"></i></span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <div class="password-wrapper input-wrap">
+          <input type="password" id="loginPassword" placeholder="Enter password"
+            autocomplete="current-password" required
+            oninput="clearLoginError()"/>
+          <span class="input-icon"><i class="fas fa-lock"></i></span>
+          <button type="button" class="toggle-pw" onclick="togglePw()">
+            <i class="fas fa-eye" id="pwEye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="loginError" class="login-error" style="display:none">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="loginErrorText"></span>
+      </div>
+
+      <button type="submit" class="btn-login" id="loginBtn">
+        <span id="loginBtnText"><i class="fas fa-sign-in-alt"></i> Sign In</span>
+        <span id="loginBtnLoader" style="display:none">
+          <i class="fas fa-spinner fa-spin"></i> Signing in...
+        </span>
+      </button>
+    </form>
+
+    <p class="login-hint">
+      <i class="fas fa-info-circle"></i>
+      Default: <code>admin</code> / <code>Admin@123</code>
+    </p>
+
+    <!-- Feature pills -->
+    <div class="login-features">
+      <span class="feature-pill"><i class="fas fa-bolt"></i> Live Monitoring</span>
+      <span class="feature-pill"><i class="fas fa-triangle-exclamation"></i> Instant Alerts</span>
+      <span class="feature-pill"><i class="fas fa-chart-line"></i> Compliance Tracking</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══════════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <i class="fas fa-shield-halved"></i>
+        <span>Lab Monitor</span>
+      </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" onclick="showView('dashboard')" data-view="dashboard">
+        <i class="fas fa-th-large"></i><span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" onclick="showView('alerts')" data-view="alerts">
+        <i class="fas fa-bell"></i><span>Alerts</span>
+        <span class="nav-badge" id="navAlertBadge" style="display:none">0</span>
+      </a>
+      <a href="#" class="nav-item" onclick="showView('subjects')" data-view="subjects">
+        <i class="fas fa-book"></i><span>Subjects</span>
+      </a>
+      <a href="#" class="nav-item" onclick="showView('machines')" data-view="machines">
+        <i class="fas fa-desktop"></i><span>Machines</span>
+      </a>
+      <a href="#" class="nav-item" onclick="showView('history')" data-view="history">
+        <i class="fas fa-clock-rotate-left"></i><span>History</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar"><i class="fas fa-user-tie"></i></div>
+        <div>
+          <div class="user-name" id="sidebarUsername">Master</div>
+          <div class="user-role">Lab Instructor</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="mainContent">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2 id="pageTitle">Dashboard</h2>
+        <span class="topbar-sub" id="pageSubtitle">Live monitoring</span>
+      </div>
+      <div class="topbar-right">
+        <!-- Session Control -->
+        <div class="session-control" id="sessionControl">
+          <div id="sessionInactive" class="session-inactive">
+            <select id="subjectSelect" class="select-subject">
+              <option value="">— Select Subject —</option>
+            </select>
+            <button class="btn-start-session" onclick="startSession()">
+              <i class="fas fa-play"></i> Start Session
+            </button>
+          </div>
+          <div id="sessionActive" class="session-active" style="display:none">
+            <div class="session-badge">
+              <span class="session-dot"></span>
+              <span id="sessionLabel">Python Lab</span>
+            </div>
+            <span class="session-timer" id="sessionTimer">00:00</span>
+            <button class="btn-end-session" onclick="endSession()">
+              <i class="fas fa-stop"></i> End Session
+            </button>
+          </div>
+        </div>
+        <button class="btn-icon" id="alertBellBtn" onclick="showView('alerts')" title="Alerts">
+          <i class="fas fa-bell"></i>
+          <span class="bell-badge" id="bellBadge" style="display:none">0</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── DASHBOARD VIEW ──────────────────────────────────────────────── -->
+    <section id="view-dashboard" class="view active">
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-card">
+          <i class="fas fa-desktop"></i>
+          <div><span id="statOnline">0</span><small>Online</small></div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-circle-check" style="color:var(--green)"></i>
+          <div><span id="statCompliant">0</span><small>Compliant</small></div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-triangle-exclamation" style="color:var(--red)"></i>
+          <div><span id="statViolations">0</span><small>Violations</small></div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-gauge-high" style="color:var(--yellow)"></i>
+          <div><span id="statAvgCompliance">—</span><small>Avg Score</small></div>
+        </div>
+      </div>
+
+      <div id="pcGrid" class="pc-grid"></div>
+    </section>
+
+    <!-- ── ALERTS VIEW ────────────────────────────────────────────────── -->
+    <section id="view-alerts" class="view">
+      <div class="view-toolbar">
+        <div class="toolbar-left">
+          <span id="alertCount" class="alert-count-label">0 alerts</span>
+        </div>
+        <div class="toolbar-right">
+          <!-- Sort by date -->
+          <div class="alert-sort-wrap">
+            <i class="fas fa-sort"></i>
+            <select id="alertSort" class="alert-sort-select" onchange="loadAlerts()">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </div>
+          <!-- Group toggle -->
+          <label class="toggle-label">
+            <input type="checkbox" id="groupByPc" onchange="loadAlerts()" checked/> Group by PC
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="unseenOnly" onchange="loadAlerts()"/> New only
+          </label>
+          <button class="btn-secondary" onclick="markAllSeen()">
+            <i class="fas fa-check-double"></i> Mark All Seen
+          </button>
+        </div>
+      </div>
+      <div id="alertsList" class="alerts-list"></div>
+    </section>
+
+    <!-- ── SUBJECTS VIEW ──────────────────────────────────────────────── -->
+    <section id="view-subjects" class="view">
+      <div class="view-toolbar">
+        <div class="toolbar-left"></div>
+        <div class="toolbar-right">
+          <button class="btn-primary" onclick="openAddSubjectModal()">
+            <i class="fas fa-plus"></i> Add Subject
+          </button>
+        </div>
+      </div>
+      <div id="subjectsList" class="subjects-list"></div>
+    </section>
+
+    <!-- ── MACHINES VIEW ──────────────────────────────────────────────── -->
+    <section id="view-machines" class="view">
+      <div class="view-toolbar">
+        <div class="toolbar-left">
+          <p class="hint-text"><i class="fas fa-info-circle"></i> Add each student PC. Copy its token into the agent's config.</p>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn-primary" onclick="openAddMachineModal()">
+            <i class="fas fa-plus"></i> Add Machine
+          </button>
+        </div>
+      </div>
+      <div id="machinesList" class="machines-list"></div>
+    </section>
+
+    <!-- ── HISTORY VIEW ───────────────────────────────────────────────── -->
+    <section id="view-history" class="view">
+      <div class="history-tabs">
+        <button class="history-tab active" id="htab-sessions" onclick="switchHistoryTab('sessions')">
+          <i class="fas fa-calendar-check"></i> Session History
+        </button>
+        <button class="history-tab" id="htab-machines" onclick="switchHistoryTab('machines')">
+          <i class="fas fa-desktop"></i> Machine History
+        </button>
+      </div>
+      <div id="historyContent" class="history-content"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══ PC DETAIL MODAL ═══════════════════════════════════════════════════════ -->
+<div id="pcDetailModal" class="modal-overlay" style="display:none" onclick="closePcDetail(event)">
+  <div class="modal modal-large">
+    <div class="modal-header">
+      <h3 id="pcDetailTitle"><i class="fas fa-desktop"></i> PC Details</h3>
+      <button class="modal-close" onclick="closePcDetailModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="pc-detail-grid">
+        <div class="pc-detail-info" id="pcDetailInfo"></div>
+        <div class="pc-detail-timeline">
+          <h4><i class="fas fa-clock-rotate-left"></i> Activity Timeline</h4>
+          <div id="pcTimeline" class="timeline"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD SUBJECT MODAL ═════════════════════════════════════════════════════ -->
+<div id="addSubjectModal" class="modal-overlay" style="display:none" onclick="closeModal('addSubjectModal',event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-book"></i> <span id="subjectModalTitle">Add Subject</span></h3>
+      <button class="modal-close" onclick="closeModal('addSubjectModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editSubjectId"/>
+      <div class="form-group">
+        <label>Subject Name</label>
+        <input type="text" id="subjectName" placeholder="e.g. Python Lab, DBMS Lab"/>
+      </div>
+      <div class="form-group">
+        <label>Allowed Applications</label>
+        <p class="hint-text">Apps listed here are permitted. Everything else will trigger an alert.</p>
+        <div id="appsList" class="apps-list"></div>
+        <div class="add-app-row">
+          <input type="text" id="newAppName" placeholder="App name (e.g. Visual Studio Code)"/>
+          <label class="checkbox-label">
+            <input type="checkbox" id="newAppBrowser"/> Allow Browser
+          </label>
+          <button class="btn-secondary" onclick="addAppRow()"><i class="fas fa-plus"></i> Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('addSubjectModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveSubject()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD MACHINE MODAL ═════════════════════════════════════════════════════ -->
+<div id="addMachineModal" class="modal-overlay" style="display:none" onclick="closeModal('addMachineModal',event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-desktop"></i> Add Machine</h3>
+      <button class="modal-close" onclick="closeModal('addMachineModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>PC Number</label>
+        <input type="text" id="newPcNumber" placeholder="e.g. PC-01"/>
+      </div>
+      <div class="form-group">
+        <label>Hostname (optional)</label>
+        <input type="text" id="newHostname" placeholder="e.g. cs-lab1-pc01"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('addMachineModal')">Cancel</button>
+      <button class="btn-primary" onclick="addMachine()"><i class="fas fa-plus"></i> Add Machine</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SESSION REPORT MODAL ══════════════════════════════════════════════════ -->
+<div id="reportModal" class="modal-overlay" style="display:none" onclick="closeModal('reportModal',event)">
+  <div class="modal modal-large">
+    <div class="modal-header">
+      <h3><i class="fas fa-chart-bar"></i> Session Report</h3>
+      <button class="modal-close" onclick="closeModal('reportModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="reportBody"></div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="closeModal('reportModal')"><i class="fas fa-check"></i> Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREENSHOT MODAL ═══════════════════════════════════════════════════════ -->
+<div id="screenshotModal" class="modal-overlay" style="display:none" onclick="closeModal('screenshotModal',event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-image"></i> Screenshot</h3>
+      <button class="modal-close" onclick="closeModal('screenshotModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <img id="screenshotImg" src="" style="max-width:100%;border-radius:8px;" alt="Screenshot"/>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AGENT DEPLOYMENT INSTRUCTIONS MODAL ═══════════════════════════════ -->
+<div id="deployModal" class="modal-overlay" style="display:none" onclick="closeModal('deployModal',event)">
+  <div class="modal modal-large">
+    <div class="modal-header">
+      <h3><i class="fas fa-download"></i> Agent Deployment — <span id="deployPcName"></span></h3>
+      <button class="modal-close" onclick="closeModal('deployModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <div class="deploy-success-banner">
+        <i class="fas fa-circle-check"></i>
+        <div>
+          <strong>ZIP Downloaded Successfully!</strong>
+          <span id="deployZipName"></span>
+        </div>
+      </div>
+
+      <h4 style="margin:1.25rem 0 .75rem"><i class="fas fa-list-ol"></i> Installation Steps</h4>
+
+      <div class="deploy-steps">
+        <div class="deploy-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Copy ZIP to the student PC</div>
+            <div class="step-desc">Transfer <code id="deployZipName2"></code> to the student PC via USB drive or shared network folder.</div>
+          </div>
+        </div>
+        <div class="deploy-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Extract the ZIP</div>
+            <div class="step-desc">Right-click the ZIP file → <strong>Extract All</strong> → choose any folder (e.g. Desktop).</div>
+          </div>
+        </div>
+        <div class="deploy-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Run install.bat as Administrator</div>
+            <div class="step-desc">
+              Right-click <code>install.bat</code> → <strong>Run as administrator</strong> → click Yes on the UAC prompt.
+              <div class="step-note"><i class="fas fa-triangle-exclamation"></i> Must be run as Administrator or the scheduled task won't be created.</div>
+            </div>
+          </div>
+        </div>
+        <div class="deploy-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Done!</div>
+            <div class="step-desc">The agent installs silently and starts immediately. It will auto-start on every boot — no further action needed.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="deploy-info-grid">
+        <div class="deploy-info-card">
+          <i class="fas fa-server"></i>
+          <div>
+            <div class="info-label">Server URL</div>
+            <div class="info-val" id="deployServerUrl"></div>
+          </div>
+        </div>
+        <div class="deploy-info-card">
+          <i class="fas fa-desktop"></i>
+          <div>
+            <div class="info-label">Machine</div>
+            <div class="info-val" id="deployMachineName"></div>
+          </div>
+        </div>
+        <div class="deploy-info-card">
+          <i class="fas fa-key"></i>
+          <div>
+            <div class="info-label">Token (auto-configured)</div>
+            <div class="info-val" id="deployToken" style="font-family:monospace;font-size:.75rem;word-break:break-all"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="deploy-verify">
+        <i class="fas fa-circle-info"></i>
+        <div>
+          <strong>How to verify it's working:</strong>
+          After running install.bat, check this dashboard — the PC card for <strong id="deployPcName2"></strong> should turn green within 10 seconds.
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('deployModal')">Close</button>
+      <button class="btn-primary" onclick="redownloadZip()">
+        <i class="fas fa-download"></i> Download Again
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════════════════════════════════════ -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Alert sound (simple oscillator via Web Audio API — no file needed) -->
+<script src="App.js"></script>
+</body>
+</html>
